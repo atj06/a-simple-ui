@@ -1,132 +1,180 @@
 import { useState } from "react";
+import axios from "axios";
 
 function App() {
   const [query, setQuery] = useState("");
-  const [response, setResponse] = useState("");
+  const [response, setResponse] = useState(null);
+  const [method, setMethod] = useState("");
+  const [tickets, setTickets] = useState([]);
 
-  const handleSubmit = async () => {
-  const res = await fetch(
-    "https://jsonplaceholder.typicode.com/posts/1"
-  );
+  const analyzeTicket = async () => {
+    try {
+      const res = await axios.post(
+        "http://localhost:8080/tickets",
+        {
+          description: query,
+        }
+      );
 
-  const data = await res.json();
-
-  setResponse(data.title);
-};
-
-const postData = async () => {
-  const res = await fetch(
-    "https://jsonplaceholder.typicode.com/posts",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        title: query,
-        body: "Sample body",
-        userId: 1,
-      }),
+      console.log("API Response:", res.data);
+      setResponse(res.data);
+    } catch (error) {
+      console.error(error);
+      setResponse(null);
     }
-  );
+  };
 
-  const data = await res.json();
+  const getTickets = async () => {
+    try {
+      const res = await axios.get("http://localhost:8080/tickets");
 
-  setResponse(JSON.stringify(data));
-};
-const updateData = async () => {
-  const res = await fetch(
-    "https://jsonplaceholder.typicode.com/posts/1",
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        id: 1,
-        title: query,
-        body: "Updated body",
-        userId: 1,
-      }),
+      console.log("All Tickets:", res.data);
+      setTickets(res.data);
+    } catch (error) {
+      console.error(error);
     }
-  );
+  };
 
-  const data = await res.json();
-  setResponse(JSON.stringify(data, null, 2));
-};
-
-const deleteData = async () => {
-  await fetch(
-    "https://jsonplaceholder.typicode.com/posts/1",
-    {
-      method: "DELETE",
-    }
-  );
-
-  setResponse("Record Deleted Successfully");
-};
   return (
-  <div style={{ padding: "30px", fontFamily: "Arial" }}>
-    <h1>Query Form</h1>
-
-    <label>Enter Query:</label>
-    <br />
-    <input
-      type="text"
-      placeholder="Type here..."
-      value={query}
-      onChange={(e) => setQuery(e.target.value)}
+    <div
       style={{
-        padding: "8px",
-        width: "300px",
-        marginTop: "10px",
-        marginBottom: "15px",
-      }}
-    />
-
-    <br />
-
-    <button
-      onClick={handleSubmit}
-      style={{ padding: "8px 15px", marginRight: "10px" }}
-    >
-      GET API
-    </button>
-
-    <button
-      onClick={postData}
-      style={{ padding: "8px 15px" }}
-    >
-      POST API
-    </button>
-
-    <button
-  onClick={updateData}
-  style={{ padding: "8px 15px", marginLeft: "10px" }}
->
-  PUT API
-</button>
-
-<button
-  onClick={deleteData}
-  style={{ padding: "8px 15px", marginLeft: "10px" }}
->
-  DELETE API
-</button>
-
-    <h3>Response:</h3>
-
-    <pre
-      style={{
-        backgroundColor: "#f4f4f4",
-        padding: "15px",
-        borderRadius: "5px",
+        padding: "30px",
+        fontFamily: "Arial",
       }}
     >
-      {response}
-    </pre>
-  </div>
-);
+      <h1>API Tester - Ticket Summarizer</h1>
+
+      <label>Select Method:</label>
+      <br />
+      <br />
+
+      <select
+        value={method}
+        onChange={(e) => setMethod(e.target.value)}
+        style={{
+          padding: "8px",
+          borderRadius: "5px",
+        }}
+      >
+        <option value="">Select Method</option>
+        <option value="POST">POST</option>
+        <option value="GETALL">GET ALL</option>
+      </select>
+
+      <br />
+      <br />
+
+      {method === "POST" && (
+        <>
+          <label>Enter Ticket Description:</label>
+
+          <br />
+          <br />
+
+          <textarea
+            rows="5"
+            cols="60"
+            placeholder="Enter ticket details..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            style={{
+              padding: "10px",
+              borderRadius: "5px",
+            }}
+          />
+
+          <br />
+          <br />
+
+          <button
+            onClick={analyzeTicket}
+            style={{
+              padding: "10px 20px",
+              cursor: "pointer",
+            }}
+          >
+            Create Ticket
+          </button>
+
+          {response && (
+            <div
+              style={{
+                backgroundColor: "#f4f4f4",
+                padding: "20px",
+                borderRadius: "10px",
+                marginTop: "20px",
+                width: "500px",
+                boxShadow: "0 2px 5px rgba(0,0,0,0.2)",
+              }}
+            >
+              <h3>Ticket Result</h3>
+
+              <p>
+                <b>Summary:</b> {response.summary}
+              </p>
+
+              <p>
+                <b>Priority:</b> {response.priority}
+              </p>
+
+              <p>
+                <b>Category:</b> {response.category}
+              </p>
+            </div>
+          )}
+        </>
+      )}
+
+      {method === "GETALL" && (
+        <>
+          <button
+            onClick={getTickets}
+            style={{
+              padding: "10px 20px",
+              cursor: "pointer",
+            }}
+          >
+            View All Tickets
+          </button>
+
+          <br />
+          <br />
+
+          {tickets.length === 0 ? (
+            <p>No tickets found.</p>
+          ) : (
+            tickets.map((ticket) => (
+              <div
+                key={ticket.id}
+                style={{
+                  backgroundColor: "#f4f4f4",
+                  padding: "20px",
+                  borderRadius: "10px",
+                  marginBottom: "10px",
+                  width: "500px",
+                  boxShadow: "0 2px 5px rgba(0,0,0,0.2)",
+                }}
+              >
+                <h4>Ticket #{ticket.id}</h4>
+
+                <p>
+                  <b>Summary:</b> {ticket.summary}
+                </p>
+
+                <p>
+                  <b>Priority:</b> {ticket.priority}
+                </p>
+
+                <p>
+                  <b>Category:</b> {ticket.category}
+                </p>
+              </div>
+            ))
+          )}
+        </>
+      )}
+    </div>
+  );
 }
 
 export default App;
