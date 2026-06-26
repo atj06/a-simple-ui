@@ -1,10 +1,12 @@
 services:
   backend:
+    build: ../ticket-summarizer
     image: ticket-summarizer
     ports:
       - "8080:8080"
 
   frontend:
+    build: .
     image: simple-ui
     ports:
       - "5173:5173"
@@ -19,4 +21,3 @@ services:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
     depends_on:
       - frontend
-      - backend
