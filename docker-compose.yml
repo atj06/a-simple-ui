@@ -1,0 +1,22 @@
+services:
+  backend:
+    image: ticket-summarizer
+    ports:
+      - "8080:8080"
+
+  frontend:
+    image: simple-ui
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - frontend
+      - backend
